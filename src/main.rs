@@ -1,15 +1,15 @@
 use std::env;
 use std::fs;
 use std::path::PathBuf;
-use std::collections::HashMap;
-use std::str::FromStr;
+mod day1;
 
 fn main() {
     let cookie = read_cookie();
-    let year = "2021";
+    println!("{}", cookie);
+    let year = "2022";
     let day = "1";
     let input = get_input(year, day, &cookie);
-    println!("{}", input);
+    day1::run(input);
 }
 
 fn read_cookie() -> String {
