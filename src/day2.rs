@@ -13,20 +13,14 @@ pub fn run(input: String) {
 }
 
 fn add_score(a: char, b: char) -> i32 {
-    let mut score = 0;
-    if ((a == 'A' && b == 'Y') || (a == 'B' && b == 'Z') ||(a == 'C' && b == 'X')) { // win
+    let chars_a = ['A', 'B', 'C'];
+    let chars_b = ['Y', 'Z', 'X'];
+    let pos_a = chars_a.iter().position(|&c| c == a).unwrap();
+    let pos_b = chars_b.iter().position(|&c| c == b).unwrap();
+    let mut score = ((pos_b as i32 + 1) % 3) + 1;
+    if pos_b == pos_a { // win
         score += 6;
-    } else if ((a == 'A' && b == 'Z') || (a == 'B' && b == 'X') ||(a == 'C' && b == 'Y')) { // loss
-
-    } else { // draw
-        score += 3;
-    }
-    
-    if (b == 'X') {
-        score += 1;
-    } else if (b == 'Y') {
-        score += 2;
-    } else { // Z
+    } else if pos_a == (pos_b + 1) % 3 { // draw
         score += 3;
     }
 
