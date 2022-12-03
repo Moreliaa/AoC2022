@@ -3,15 +3,17 @@ use std::fs;
 use std::path::PathBuf;
 mod day1;
 mod day2;
+mod day3;
 
 fn main() {
     let cookie = read_cookie();
     println!("{}", cookie);
     let year = "2022";
-    let day = "2";
+    let day = "3";
     let input = get_input(year, day, &cookie);
     //day1::run(input);
-    day2::run(input);
+    //day2::run(input);
+    day3::run(input);
 }
 
 fn read_cookie() -> String {
