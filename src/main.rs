@@ -6,18 +6,20 @@ mod day2;
 mod day3;
 mod day4;
 mod day5;
+mod day6;
 
 fn main() {
     let cookie = read_cookie();
     println!("{}", cookie);
     let year = "2022";
-    let day = "5";
+    let day = "6";
     let input = get_input(year, day, &cookie);
     //day1::run(input);
     //day2::run(input);
     //day3::run(input);
     //day4::run(input);
-    day5::run(input);
+    //day5::run(input);
+    day6::run(input);
 }
 
 fn read_cookie() -> String {
