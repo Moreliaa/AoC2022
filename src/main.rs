@@ -1,16 +1,24 @@
+
+
 use std::env;
 use std::fs;
 use std::path::PathBuf;
+#[allow(dead_code)]
 mod day1;
+#[allow(dead_code)]
 mod day2;
+#[allow(dead_code)]
 mod day3;
+#[allow(dead_code)]
 mod day4;
+#[allow(dead_code)]
 mod day5;
+#[allow(dead_code)]
 mod day6;
 
 fn main() {
     let cookie = read_cookie();
-    println!("{}", cookie);
+    //println!("{}", cookie);
     let year = "2022";
     let day = "6";
     let input = get_input(year, day, &cookie);
@@ -28,7 +36,7 @@ fn read_cookie() -> String {
 
 fn get_input(year:&str, day:&str, cookie:&str) -> String {
     let input_path = get_input_path(year, day);
-    println!("{}", input_path.display());
+    //println!("{}", input_path.display());
     match fs::read_to_string(&input_path) {
         Err(_reason) => return fetch_input_from_site(year, day, &input_path, cookie),
         Ok(value) => return value,
@@ -46,7 +54,7 @@ fn get_input_path(year:&str, day:&str) -> PathBuf {
     path
 }
 
-fn fetch_input_from_site(year:&str, day:&str, inputPath:&PathBuf, cookie:&str) -> String {
+fn fetch_input_from_site(year:&str, day:&str, _input_path:&PathBuf, cookie:&str) -> String {
     let mut url = String::from("https://www.adventofcode.com/");
     url.push_str(year);
     url.push_str("/day/");

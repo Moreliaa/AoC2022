@@ -1,4 +1,3 @@
-use std::fs;
 use std::vec::Vec;
 
 pub fn run(input: String) {
@@ -9,7 +8,7 @@ pub fn run(input: String) {
 
     for line in input_split {
         if line == "" {
-            if (current > max) {
+            if current > max {
                 max = current;
             }
             numbers.push(current);

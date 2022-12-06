@@ -59,7 +59,7 @@ pub fn run(input: String) {
                     v_t.push(character);
                 }
 
-                while (v_pt2.len() > 0) {
+                while v_pt2.len() > 0 {
                     let v_t_pt2 = crates_pt2.get_mut(indices.get(&t).unwrap()).unwrap();
                     v_t_pt2.push(v_pt2.pop().unwrap());
                 }
