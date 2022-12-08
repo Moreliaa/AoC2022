@@ -15,19 +15,22 @@ mod day4;
 mod day5;
 #[allow(dead_code)]
 mod day6;
+#[allow(dead_code)]
+mod day7;
 
 fn main() {
     let cookie = read_cookie();
     //println!("{}", cookie);
     let year = "2022";
-    let day = "6";
+    let day = "7";
     let input = get_input(year, day, &cookie);
     //day1::run(input);
     //day2::run(input);
     //day3::run(input);
     //day4::run(input);
     //day5::run(input);
-    day6::run(input);
+    //day6::run(input);
+    day7::run(input);
 }
 
 fn read_cookie() -> String {
