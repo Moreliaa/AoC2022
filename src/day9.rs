@@ -17,13 +17,14 @@ fn run_for_len(input: &String, number_of_knots: usize) -> usize {
     let mut tail_set: HashSet<String> = HashSet::new();
 
     for line in input.lines() {
-        println!("{}", line);
-        for idx in 0..knots.len() - 1 {
-            let mut params = line.split(" ");
-            let cmd = params.next().unwrap();
-            let step_size = params.next().unwrap().parse::<i32>().unwrap();
+        //println!("{}", line);
 
-            for _ in 0..step_size {
+        let mut params = line.split(" ");
+        let cmd = params.next().unwrap();
+        let step_size = params.next().unwrap().parse::<i32>().unwrap();
+
+        for _ in 0..step_size {
+            for idx in 0..knots.len() - 1 {
                 if idx == 0 {
                     if cmd == "L" {
                         knots[idx].x -= 1;
@@ -63,14 +64,15 @@ fn run_for_len(input: &String, number_of_knots: usize) -> usize {
                         knots[idx + 1].x -= 1;
                     }
                 }
-                
+
                 if idx == knots.len() - 2 {
                     let key = format!("{},{}", knots[idx + 1].x, knots[idx + 1].y);
+                    println!("{}", key);
                     if !tail_set.contains(&key) {
                         tail_set.insert(key);
                     }
                 }
-            }            
+            }
         }
         /*for row in (0..10).rev() {
             for col in 0..10 {
