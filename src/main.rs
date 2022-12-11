@@ -23,6 +23,8 @@ mod day8;
 mod day9;
 #[allow(dead_code)]
 mod day10;
+#[allow(dead_code)]
+mod day11;
 
 fn main() {
     let cookie = read_cookie();
@@ -39,7 +41,8 @@ fn main() {
     //day7::run(input);
     //day8::run(input);
     //day9::run(input);
-    day10::run(input);
+    //day10::run(input);
+    day11::run(input);
 }
 
 fn read_cookie() -> String {
