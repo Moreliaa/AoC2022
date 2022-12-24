@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::vec::Vec;
 
 pub fn run(input: String) {
@@ -24,9 +25,32 @@ pub fn run(input: String) {
         };
         pt1_line_idx += 1;
         println!("==============================================");
-        //println!("Result: {} for {} - {}", result, line_a, line_b);
     }
     println!("Pt1: {}", pt1);
+
+    lines.push("[[2]]");
+    lines.push("[[6]]");
+
+    lines.sort_by(|a, b| compare_pt2(a, b));
+
+    let mut pt2 = 1;
+    for (idx, line) in lines.iter().enumerate() {
+        if *line == "[[2]]" || *line == "[[6]]" {
+            pt2 *= idx + 1;
+        }
+    }
+    println!("Pt2: {}", pt2);
+}
+
+fn compare_pt2(a: &str, b: &str) -> Ordering {
+    let line_a = String::from(a);
+    let line_b = String::from(b);
+    let result = compare_values(&line_a, &line_b);
+    match result {
+        Some(false) => return Ordering::Greater,
+        Some(true) => return Ordering::Less,
+        None => return Ordering::Equal,
+    }
 }
 
 fn compare_values(str_a: &String, str_b: &String) -> Option<bool> {
@@ -76,7 +100,7 @@ fn compare_values(str_a: &String, str_b: &String) -> Option<bool> {
             };
         }
     }
-    
+
     if list_a.len() == list_b.len() {
         return None; // inconclusive
     }
