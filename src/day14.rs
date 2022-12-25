@@ -2,17 +2,22 @@ use std::collections::HashMap;
 use std::vec::Vec;
 
 pub fn run(input: String) {
-    let mut map = build_map(input);
+    let mut map = build_map(String::from(&input));
     let mut pt1 = 0;
     while drop_sand(&mut map.0, map.1) {
         pt1 += 1;
     }
+    let mut map_pt2 = build_map(input);
+    let mut pt2 = 0;
+    while drop_sand_pt2(&mut map_pt2.0, map_pt2.1) {
+        pt2 += 1;
+    }
 
-    for y in 0..10 {
-        for x in 494..504 {
+    for y in 0..12 {
+        for x in 480..520 {
             let key = format!("{},{}", x, y);
-            if map.0.contains_key(&key) {
-                print!("{}", map.0.get(&key).unwrap());
+            if map_pt2.0.contains_key(&key) {
+                print!("{}", map_pt2.0.get(&key).unwrap());
             } else {
                 print!(".");
             }
@@ -21,19 +26,20 @@ pub fn run(input: String) {
     }
 
     println!("Pt1: {}", pt1);
+    println!("Pt2: {}", pt2);
 }
 
-fn drop_sand(map:&mut HashMap<String, char>, y_max: i32) -> bool {
+fn drop_sand(map: &mut HashMap<String, char>, y_max: i32) -> bool {
     let mut x = 500;
     let mut y = 0;
     loop {
-        let straight = format!("{},{}", x,y+1);
+        let straight = format!("{},{}", x, y + 1);
         if map.contains_key(&straight) {
-            let left = format!("{},{}", x-1,y+1);
+            let left = format!("{},{}", x - 1, y + 1);
             if map.contains_key(&left) {
-                let right = format!("{},{}", x+1,y+1);
+                let right = format!("{},{}", x + 1, y + 1);
                 if map.contains_key(&right) {
-                    let current = format!("{},{}", x,y);
+                    let current = format!("{},{}", x, y);
                     map.insert(current, 'o');
                     return true;
                 } else {
@@ -49,6 +55,41 @@ fn drop_sand(map:&mut HashMap<String, char>, y_max: i32) -> bool {
         }
         if y > y_max {
             return false;
+        }
+    }
+}
+
+fn drop_sand_pt2(map: &mut HashMap<String, char>, y_max: i32) -> bool {
+    let mut x = 500;
+    let mut y = -1;
+    loop {
+        let straight = format!("{},{}", x, y + 1);
+        if map.contains_key(&straight) {
+            if x == 500 && y == -1 {
+                return false;
+            }
+            let left = format!("{},{}", x - 1, y + 1);
+            if map.contains_key(&left) {
+                let right = format!("{},{}", x + 1, y + 1);
+                if map.contains_key(&right) {
+                    let current = format!("{},{}", x, y);
+                    map.insert(current, 'o');
+                    return true;
+                } else {
+                    x += 1;
+                    y += 1;
+                }
+            } else {
+                x -= 1;
+                y += 1;
+            }
+        } else {
+            y += 1;
+        }
+        if y > y_max {
+            let current = format!("{},{}", x, y);
+            map.insert(current, 'o');
+            return true;
         }
     }
 }
