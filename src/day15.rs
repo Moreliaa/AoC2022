@@ -37,7 +37,7 @@ pub fn run(input: String) {
     let y_max = 4000000;
     for target_y_pt2 in 0..y_max {
         if target_y_pt2 % 100000 == 0 {
-            print!(".");
+            eprint!(".");
         }
         let mut ranges_pt2: Vec<(i32, i32)> = Vec::new();
         for s in sensors.iter() {
