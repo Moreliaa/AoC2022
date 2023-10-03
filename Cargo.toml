@@ -9,3 +9,4 @@ edition = "2021"
 regex = "1"
 reqwest = { version = "0.11", features = ["blocking", "cookies", "json"] }
 itertools = { version = "0.10" }
+aoc_lib = { git = "https://github.com/Moreliaa/aoc_lib.git" }

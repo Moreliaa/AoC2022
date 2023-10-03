@@ -15,8 +15,17 @@ dependencies = [
 name = "aoc2022"
 version = "0.1.0"
 dependencies = [
+ "aoc_lib",
  "itertools",
  "regex",
+ "reqwest",
+]
+
+[[package]]
+name = "aoc_lib"
+version = "0.1.0"
+source = "git+https://github.com/Moreliaa/aoc_lib.git#ce4167ab6c397387b446150216dedfa98b62b581"
+dependencies = [
  "reqwest",
 ]
 
