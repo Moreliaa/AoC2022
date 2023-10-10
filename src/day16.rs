@@ -18,6 +18,11 @@ struct State {
 }
 
 pub fn run(input: String) {
+    let map = parse_input(input);
+    pt1(&map);
+}
+
+fn parse_input(input: String) -> HashMap<String, Node> {
     let rx = Regex::new(
         r"Valve (.+) has flow rate=(.+); (tunnel leads to valve|tunnels lead to valve)(s | )(.+)",
     )
@@ -35,11 +40,10 @@ pub fn run(input: String) {
         };
         map.insert(name, node);
     }
-    let map = map;
-    pt1(&map);
+    map
 }
 
-fn pt1(map: &HashMap<String, Node>) {
+fn pt1(map: &HashMap<String, Node>) -> i32 {
     let state = State {
         pos: String::from("AA"),
         total_flow: 0,
@@ -48,7 +52,7 @@ fn pt1(map: &HashMap<String, Node>) {
     let mut states = vec![state];
 
     let mut step = 0;
-    while step <= MAX_STEPS {
+    while step < MAX_STEPS {
         let mut next_states: Vec<State> = Vec::new();
         step += 1;
         println!("Step {step}");
@@ -91,8 +95,32 @@ fn pt1(map: &HashMap<String, Node>) {
     }
 
     println!("Pt1: {max}"); // 1591 is too low
+    max
 }
 
 fn calc_total_flow(flow_rate: i32, step: i32) -> i32 {
     flow_rate * (MAX_STEPS - step)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test() {
+        let input = String::from(
+        "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
+        Valve BB has flow rate=13; tunnels lead to valves CC, AA
+        Valve CC has flow rate=2; tunnels lead to valves DD, BB
+        Valve DD has flow rate=20; tunnels lead to valves CC, AA, EE
+        Valve EE has flow rate=3; tunnels lead to valves FF, DD
+        Valve FF has flow rate=0; tunnels lead to valves EE, GG
+        Valve GG has flow rate=0; tunnels lead to valves FF, HH
+        Valve HH has flow rate=22; tunnel leads to valve GG
+        Valve II has flow rate=0; tunnels lead to valves AA, JJ
+        Valve JJ has flow rate=21; tunnel leads to valve II"
+    );
+        let map = parse_input(input);
+        assert_eq!(pt1(&map), 1651);
+    }
 }
