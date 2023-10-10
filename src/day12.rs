@@ -76,7 +76,7 @@ fn dijkstra(
         let key = format!("{},{}", x, y);
         let next_distance;
         {
-            let mut node = nodes.get_mut(&key).unwrap();
+            let node = nodes.get_mut(&key).unwrap();
             node.visited = true;
             next_distance = node.distance + 1;
         }
@@ -105,7 +105,7 @@ fn dijkstra(
                 };
                 nodes.insert(next_key, next_node);
             } else {
-                let mut next_node = nodes.get_mut(&next_key).unwrap();
+                let next_node = nodes.get_mut(&next_key).unwrap();
                 if next_distance < next_node.distance {
                     next_node.distance = next_distance;
                 }

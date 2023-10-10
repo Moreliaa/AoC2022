@@ -1,8 +1,3 @@
-
-
-use std::env;
-use std::fs;
-use std::path::PathBuf;
 #[allow(dead_code)]
 mod day1;
 #[allow(dead_code)]
@@ -40,7 +35,7 @@ extern crate aoc_lib;
 
 fn main() {
     let year = "2022";
-    let day = "15";
+    let day = "16";
     let input = aoc_lib::input_reader::get_input(year, day, "cookie.txt");
     //day1::run(input);
     //day2::run(input);
@@ -56,6 +51,6 @@ fn main() {
     //day12::run(input);
     //day13::run(input);
     //day14::run(input);
-    day15::run(input);
-    //day16::run(input);
+    //day15::run(input);
+    day16::run(input);
 }
