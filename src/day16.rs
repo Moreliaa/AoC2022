@@ -71,7 +71,7 @@ fn pt1(map: &HashMap<String, Node>) -> i32 {
             'checking_connections: for p in &map.get(&s.pos).unwrap().connections {
                 for ns in &next_states {
                     if &ns.pos == p {
-                        if ns.total_flow > s.total_flow || (ns.total_flow == s.total_flow && ns.open_valves == s.open_valves) {
+                        if ns.open_valves.is_superset(&s.open_valves) && ns.total_flow >= s.total_flow {
                             continue 'checking_connections;
                         }
                     }
