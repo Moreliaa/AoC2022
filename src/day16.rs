@@ -15,6 +15,7 @@ struct State {
     pos: String,
     total_flow: i32,
     open_valves: HashSet<String>,
+    previous_pos: String
 }
 
 pub fn run(input: String) {
@@ -48,53 +49,96 @@ fn pt1(map: &HashMap<String, Node>) -> i32 {
         pos: String::from("AA"),
         total_flow: 0,
         open_valves: HashSet::new(),
+        previous_pos: String::from("AA")
     };
-    let mut states = vec![state];
+    let mut states:HashMap<String, Vec<State>> = HashMap::new();
+    states.insert(String::from("AA"), vec![state]);
 
     let mut step = 0;
     while step < MAX_STEPS {
-        let mut next_states: Vec<State> = Vec::new();
+        let mut next_states: HashMap<String, Vec<State>> = HashMap::new();
         step += 1;
         println!("Step {step}");
-        for s in states {
-            let node_flow_rate = map.get(&s.pos).unwrap().flow_rate;
-            if node_flow_rate > 0 && !&s.open_valves.contains(&s.pos) {
-                let mut next_open_valves = s.open_valves.clone();
-                next_open_valves.insert(String::from(&s.pos));
-                next_states.push(State {
-                    pos: String::from(&s.pos),
-                    total_flow: &s.total_flow + calc_total_flow(node_flow_rate, step),
-                    open_valves: next_open_valves,
-                });
+        for (_, current_states) in states {
+            for current_state in current_states {
+
+            let node_flow_rate = map.get(&current_state.pos).unwrap().flow_rate;
+            if node_flow_rate > 0 && !&current_state.open_valves.contains(&current_state.pos) {
+                let mut next_open_valves = current_state.open_valves.clone();
+                next_open_valves.insert(String::from(&current_state.pos));
+
+                let next_total_flow = &current_state.total_flow + calc_total_flow(node_flow_rate, step);
+
+                let mut found_better = false;
+                if next_states.contains_key(&current_state.pos) {
+                    for ns in next_states.get(&current_state.pos).unwrap() {
+                        if ns.open_valves.is_superset(&next_open_valves) && ns.total_flow >= next_total_flow {
+                            found_better = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if !found_better {
+                    let state_to_add = State {
+                        pos: String::from(&current_state.pos),
+                        total_flow: next_total_flow,
+                        open_valves: next_open_valves,
+                        previous_pos: String::from(&current_state.pos)
+                    };
+                    if !next_states.contains_key(&current_state.pos) {
+                        next_states.insert(String::from(&current_state.pos), vec![state_to_add]);
+                    } else {
+                        next_states.get_mut(&current_state.pos).unwrap().push(state_to_add);
+                    }
+                    
+                }
             }
 
-            'checking_connections: for p in &map.get(&s.pos).unwrap().connections {
-                for ns in &next_states {
-                    if &ns.pos == p {
-                        if ns.open_valves.is_superset(&s.open_valves) && ns.total_flow >= s.total_flow {
+            'checking_connections: for p in &map.get(&current_state.pos).unwrap().connections {
+                if p == &current_state.previous_pos {
+                    continue;
+                }
+                
+                if next_states.contains_key(p) {
+                    for ns in next_states.get(p).unwrap() {
+                        if ns.open_valves.is_superset(&current_state.open_valves) && ns.total_flow >= current_state.total_flow {
                             continue 'checking_connections;
                         }
                     }
                 }
-                next_states.push(State {
+                
+                let state_to_add = State {
                     pos: String::from(p),
-                    total_flow: s.total_flow,
-                    open_valves: s.open_valves.clone(),
-                });
+                    total_flow: current_state.total_flow,
+                    open_valves: current_state.open_valves.clone(),
+                    previous_pos: String::from(&current_state.pos)
+                };
+
+                if !next_states.contains_key(p) {
+                    next_states.insert(String::from(p), vec![state_to_add]);
+                } else {
+                    next_states.get_mut(p).unwrap().push(state_to_add);
+                }
             }
         }
+        }
+        
         states = dbg!(next_states);
+        println!("Len: {}", states.len());
         println!("================");
     }
 
     let mut max = 0;
-    for s in states {
-        if s.total_flow > max  {
-            max = s.total_flow;
+    for (_, states_for_pos) in states {
+        for s in states_for_pos {
+            if s.total_flow > max  {
+                max = s.total_flow;
+            }
         }
     }
 
-    println!("Pt1: {max}"); // 1591 is too low
+    println!("Pt1: {max}");
     max
 }
 
