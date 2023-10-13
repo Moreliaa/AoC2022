@@ -72,7 +72,7 @@ fn pt1(map: &HashMap<String, Node>) -> i32 {
                 let mut found_better = false;
                 if next_states.contains_key(&current_state.pos) {
                     for ns in next_states.get(&current_state.pos).unwrap() {
-                        if ns.open_valves.is_superset(&next_open_valves) && ns.total_flow >= next_total_flow {
+                        if ns.open_valves.is_subset(&next_open_valves) && ns.total_flow >= next_total_flow {
                             found_better = true;
                             break;
                         }
@@ -102,7 +102,7 @@ fn pt1(map: &HashMap<String, Node>) -> i32 {
                 
                 if next_states.contains_key(p) {
                     for ns in next_states.get(p).unwrap() {
-                        if ns.open_valves.is_superset(&current_state.open_valves) && ns.total_flow >= current_state.total_flow {
+                        if ns.open_valves.is_subset(&current_state.open_valves) && ns.total_flow >= current_state.total_flow {
                             continue 'checking_connections;
                         }
                     }
@@ -124,9 +124,7 @@ fn pt1(map: &HashMap<String, Node>) -> i32 {
         }
         }
         
-        states = dbg!(next_states);
-        println!("Len: {}", states.len());
-        println!("================");
+        states = next_states;
     }
 
     let mut max = 0;
@@ -144,6 +142,10 @@ fn pt1(map: &HashMap<String, Node>) -> i32 {
 
 fn calc_total_flow(flow_rate: i32, step: i32) -> i32 {
     flow_rate * (MAX_STEPS - step)
+}
+
+fn pt2(map: &HashMap<String, Node>) -> i32 {
+    0
 }
 
 #[cfg(test)]
@@ -166,5 +168,23 @@ mod tests {
     );
         let map = parse_input(input);
         assert_eq!(pt1(&map), 1651);
+    }
+
+    #[test]
+    fn test_pt2() {
+        let input = String::from(
+            "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
+            Valve BB has flow rate=13; tunnels lead to valves CC, AA
+            Valve CC has flow rate=2; tunnels lead to valves DD, BB
+            Valve DD has flow rate=20; tunnels lead to valves CC, AA, EE
+            Valve EE has flow rate=3; tunnels lead to valves FF, DD
+            Valve FF has flow rate=0; tunnels lead to valves EE, GG
+            Valve GG has flow rate=0; tunnels lead to valves FF, HH
+            Valve HH has flow rate=22; tunnel leads to valve GG
+            Valve II has flow rate=0; tunnels lead to valves AA, JJ
+            Valve JJ has flow rate=21; tunnel leads to valve II"
+        );
+            let map = parse_input(input);
+            assert_eq!(pt2(&map), 1707);
     }
 }
