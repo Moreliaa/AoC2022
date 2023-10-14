@@ -20,7 +20,51 @@ struct State {
 
 pub fn run(input: String) {
     let map = parse_input(input);
+    let distance_map = build_distance_map(&map);
     pt1(&map);
+    pt2(&map);
+}
+
+fn build_distance_map(map: &HashMap<String, Node>) -> HashMap<String, HashMap<String, i32>> {
+    let mut result = HashMap::new();
+    for (key, _) in map {
+        result.insert(String::from(key), build_distances_for_node(map, key));
+    }
+    result
+}
+
+fn build_distances_for_node(map: &HashMap<String, Node>, key: &String) -> HashMap<String, i32> {
+    let mut result = HashMap::new();
+    let mut seen: HashSet<String> = HashSet::new();
+
+    let mut pos = String::from(key);
+
+    result.insert(String::from(&pos), 0);
+
+    while result.len() < map.len() {
+        let steps = *result.get(&pos).unwrap() + 1;
+        let current_node = map.get(&pos).unwrap();
+        seen.insert(String::from(&pos));
+
+        for n in &current_node.connections {
+            if !result.contains_key(n) {
+                result.insert(String::from(n), steps);
+            }
+        }
+
+        // get next node
+        let mut lowest_unseen_steps = -1;
+        for (k, val) in &result {
+            if seen.contains(k) {
+                continue;
+            }
+            if lowest_unseen_steps < 0 || *val < lowest_unseen_steps {
+                lowest_unseen_steps = *val;
+                pos = String::from(k);
+            }
+        }
+    }
+    result
 }
 
 fn parse_input(input: String) -> HashMap<String, Node> {
@@ -153,7 +197,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test() {
+    fn test_pt1() {
         let input = String::from(
         "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
         Valve BB has flow rate=13; tunnels lead to valves CC, AA
