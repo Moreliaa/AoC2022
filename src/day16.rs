@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 const MAX_STEPS: i32 = 30;
+const MAX_STEPS_PT2: i32 = 26;
 
 #[derive(Debug)]
 struct Node {
@@ -20,10 +21,11 @@ struct State {
 
 #[derive(Debug)]
 struct NewState {
-    actor: Actor,
+    actors: Vec<Actor>,
     total_flow: i32,
     open_valves: HashSet<String>
 }
+
 #[derive(Debug)]
 struct Actor {
     last_pos: String,
@@ -35,11 +37,11 @@ fn pt1_new(map: &HashMap<String, HashMap<String, i32>>, flow_rates: &HashMap<Str
     let mut states:Vec<NewState> = Vec::new();
 
     let initial_state = NewState {
-        actor: Actor {
+        actors: vec![Actor {
             last_pos: String::from("AA"),
             target_pos: String::from("AA"),
             steps_until_arrival: 0
-        },
+        }],
         total_flow: 0,
         open_valves: HashSet::new()
     };
@@ -51,37 +53,37 @@ fn pt1_new(map: &HashMap<String, HashMap<String, i32>>, flow_rates: &HashMap<Str
         println!("Step: {step}");
         let mut next_states:Vec<NewState> = Vec::new();
         for s in &states {
-            if s.actor.steps_until_arrival > 0 {
+            if s.actors[0].steps_until_arrival > 0 {
                 // moving, push state
                 let new_state = NewState {
-                    actor: Actor {
-                        last_pos: String::from(&s.actor.last_pos),
-                        target_pos: String::from(&s.actor.target_pos),
-                        steps_until_arrival: s.actor.steps_until_arrival - 1
-                    },
+                    actors: vec![Actor {
+                        last_pos: String::from(&s.actors[0].last_pos),
+                        target_pos: String::from(&s.actors[0].target_pos),
+                        steps_until_arrival: s.actors[0].steps_until_arrival - 1
+                    }],
                     total_flow: s.total_flow,
                     open_valves: s.open_valves.clone()
                 };
                 next_states.push(new_state);
             } else {
                 // arrived, turn valve and look for next connections
-                let flow_rate_target = flow_rates.get(&s.actor.target_pos).unwrap().flow_rate;
+                let flow_rate_target = flow_rates.get(&s.actors[0].target_pos).unwrap().flow_rate;
                 let next_flow = s.total_flow + calc_total_flow(flow_rate_target, step);
 
                 let mut next_valves = s.open_valves.clone();
-                next_valves.insert(String::from(&s.actor.target_pos));
+                next_valves.insert(String::from(&s.actors[0].target_pos));
 
                 let distance_offset = if step == 1 && next_flow == 0 {-1} else {0}; // take into account first node being 0 pressure
-                for (next_node, distance) in map.get(&s.actor.target_pos).unwrap() {
+                for (next_node, distance) in map.get(&s.actors[0].target_pos).unwrap() {
                     if next_valves.contains(next_node) {
                         continue;
                     }
                     let new_state = NewState {
-                        actor: Actor {
-                            last_pos: String::from(&s.actor.target_pos),
+                        actors: vec![Actor {
+                            last_pos: String::from(&s.actors[0].target_pos),
                             target_pos: String::from(next_node),
                             steps_until_arrival: *distance + distance_offset // + 1 to account for time taken for the valve
-                        },
+                        }],
                         total_flow: next_flow,
                         open_valves: next_valves.clone()
                     };
@@ -108,7 +110,7 @@ pub fn run(input: String) {
     let distance_map = build_distance_map(&map);
     pt1_new(&distance_map, &map);
     pt1(&map);
-    pt2(&map);
+    pt2(&distance_map, &map);
 }
 
 
@@ -276,8 +278,8 @@ fn calc_total_flow(flow_rate: i32, step: i32) -> i32 {
     flow_rate * (MAX_STEPS - step)
 }
 
-fn pt2(map: &HashMap<String, Node>) -> i32 {
-    0
+fn pt2(map: &HashMap<String, HashMap<String, i32>>, flow_rates: &HashMap<String, Node>) -> i32 {
+        0
 }
 
 #[cfg(test)]
@@ -336,6 +338,7 @@ mod tests {
             Valve JJ has flow rate=21; tunnel leads to valve II"
         );
             let map = parse_input(input);
-            assert_eq!(pt2(&map), 1707);
+            let other_map = build_distance_map(&map);
+            assert_eq!(pt2(&other_map, &map), 1707);
     }
 }
