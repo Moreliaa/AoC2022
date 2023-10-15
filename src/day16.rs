@@ -1,4 +1,5 @@
 use regex::Regex;
+use core::num;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
@@ -33,18 +34,28 @@ struct Actor {
     steps_until_arrival: i32,
 }
 
-fn pt1_new(map: &HashMap<String, HashMap<String, i32>>, flow_rates: &HashMap<String, Node>) -> i32 {
+fn pt1_pt2(map: &HashMap<String, HashMap<String, i32>>, flow_rates: &HashMap<String, Node>, number_of_actors: i32) -> i32 {
     let mut states:Vec<NewState> = Vec::new();
-
-    let initial_state = NewState {
-        actors: vec![Actor {
+    let mut initial_actors:Vec<Actor> = Vec::new();
+    for _ in 0..number_of_actors {
+        initial_actors.push(Actor {
             last_pos: String::from("AA"),
             target_pos: String::from("AA"),
             steps_until_arrival: 0
-        }],
+        });
+    }
+
+    let mut initial_state = NewState {
+        actors: initial_actors,
         total_flow: 0,
         open_valves: HashSet::new()
     };
+    for (node_name, node) in flow_rates {
+        if node.flow_rate == 0 && node_name != "AA" {
+            initial_state.open_valves.insert(String::from(node_name));
+        }
+    } 
+
     states.push(initial_state);
 
     let mut step = 0;
@@ -53,42 +64,73 @@ fn pt1_new(map: &HashMap<String, HashMap<String, i32>>, flow_rates: &HashMap<Str
         println!("Step: {step}");
         let mut next_states:Vec<NewState> = Vec::new();
         for s in &states {
-            if s.actors[0].steps_until_arrival > 0 {
-                // moving, push state
-                let new_state = NewState {
-                    actors: vec![Actor {
-                        last_pos: String::from(&s.actors[0].last_pos),
-                        target_pos: String::from(&s.actors[0].target_pos),
-                        steps_until_arrival: s.actors[0].steps_until_arrival - 1
-                    }],
-                    total_flow: s.total_flow,
-                    open_valves: s.open_valves.clone()
-                };
-                next_states.push(new_state);
-            } else {
-                // arrived, turn valve and look for next connections
-                let flow_rate_target = flow_rates.get(&s.actors[0].target_pos).unwrap().flow_rate;
-                let next_flow = s.total_flow + calc_total_flow(flow_rate_target, step);
+            let mut next_valves = s.open_valves.clone();
+            let mut next_flow = s.total_flow;
+            let mut next_actors: Vec<Vec<Actor>> = Vec::new();
+            let mut first_valve_turned = false; // account for both actors starting on AA on step 1
 
-                let mut next_valves = s.open_valves.clone();
-                next_valves.insert(String::from(&s.actors[0].target_pos));
+            for a in &s.actors {
+                if !next_valves.contains(&a.target_pos) && a.steps_until_arrival == 0 && !first_valve_turned {
+                        let flow_rate_target = flow_rates.get(&a.target_pos).unwrap().flow_rate;
+                        next_flow += calc_total_flow(flow_rate_target, step);
+                        next_valves.insert(String::from(&a.target_pos));
+                        if step == 1 {
+                            first_valve_turned = true;
+                        }
+                }
+            }
 
-                let distance_offset = if step == 1 && next_flow == 0 {-1} else {0}; // take into account first node being 0 pressure
-                for (next_node, distance) in map.get(&s.actors[0].target_pos).unwrap() {
-                    if next_valves.contains(next_node) {
-                        continue;
+            let mut is_second_actor = false;
+            for a in &s.actors {
+                let mut possible_actor_states: Vec<Actor> = Vec::new();
+                if a.steps_until_arrival > 0 {
+                    possible_actor_states.push(Actor {
+                        last_pos: String::from(&a.last_pos),
+                        target_pos: String::from(&a.target_pos),
+                        steps_until_arrival: a.steps_until_arrival - 1
+                    });
+                } else {
+                    // arrived, turn valve and look for next connections
+                    let distance_offset = if step == 1 && ((next_flow == 0 && first_valve_turned) || (first_valve_turned && is_second_actor)) {-1} else {0}; // take into account first node being 0 pressure
+                    is_second_actor = true;
+                    for (next_node, distance) in map.get(&a.target_pos).unwrap() {
+                        if next_valves.contains(next_node) {
+                            continue;
+                        }
+                        possible_actor_states.push(Actor {
+                                last_pos: String::from(&a.target_pos),
+                                target_pos: String::from(next_node),
+                                steps_until_arrival: *distance + distance_offset // + 1 to account for time taken for the valve
+                        });
                     }
-                    let new_state = NewState {
-                        actors: vec![Actor {
-                            last_pos: String::from(&s.actors[0].target_pos),
-                            target_pos: String::from(next_node),
-                            steps_until_arrival: *distance + distance_offset // + 1 to account for time taken for the valve
-                        }],
+
+                    if next_valves.len() == map.len() {
+                        possible_actor_states.push(Actor {
+                            last_pos: String::from(&a.last_pos),
+                            target_pos: String::from(&a.target_pos),
+                            steps_until_arrival: 0 // + 1 to account for time taken for the valve
+                         });
+                    }
+                }
+                next_actors.push(possible_actor_states);
+            }
+
+            if next_actors.len() == 1 {
+                for a in &next_actors[0] {
+                    let a_new = Actor {
+                        last_pos: String::from(&a.last_pos),
+                        target_pos: String::from(&a.target_pos),
+                        steps_until_arrival: a.steps_until_arrival
+                    };
+                    dbg!(next_flow);
+                    next_states.push(NewState {
+                        actors: vec![a_new],
                         total_flow: next_flow,
                         open_valves: next_valves.clone()
-                    };
-                    next_states.push(new_state);
+                    });
                 }
+            } else {
+                
             }
         }
         states = next_states;
@@ -108,7 +150,7 @@ fn pt1_new(map: &HashMap<String, HashMap<String, i32>>, flow_rates: &HashMap<Str
 pub fn run(input: String) {
     let map = parse_input(input);
     let distance_map = build_distance_map(&map);
-    pt1_new(&distance_map, &map);
+    pt1_pt2(&distance_map, &map, 1);
     pt1(&map);
     pt2(&distance_map, &map);
 }
@@ -302,7 +344,7 @@ mod tests {
         );
             let map = parse_input(input);
             let other_map = build_distance_map(&map);
-            assert_eq!(pt1_new(&other_map, &map), 1651);
+            assert_eq!(pt1_pt2(&other_map, &map, 1), 1651);
     }
 
     #[test]
@@ -339,6 +381,6 @@ mod tests {
         );
             let map = parse_input(input);
             let other_map = build_distance_map(&map);
-            assert_eq!(pt2(&other_map, &map), 1707);
+            assert_eq!(pt1_pt2(&other_map, &map, 2), 1707);
     }
 }
