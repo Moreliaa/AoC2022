@@ -18,12 +18,100 @@ struct State {
     previous_pos: String
 }
 
+#[derive(Debug)]
+struct NewState {
+    actor: Actor,
+    total_flow: i32,
+    open_valves: HashSet<String>
+}
+#[derive(Debug)]
+struct Actor {
+    last_pos: String,
+    target_pos: String,
+    steps_until_arrival: i32,
+}
+
+fn pt1_new(map: &HashMap<String, HashMap<String, i32>>, flow_rates: &HashMap<String, Node>) -> i32 {
+    let mut states:Vec<NewState> = Vec::new();
+
+    let initial_state = NewState {
+        actor: Actor {
+            last_pos: String::from("AA"),
+            target_pos: String::from("AA"),
+            steps_until_arrival: 0
+        },
+        total_flow: 0,
+        open_valves: HashSet::new()
+    };
+    states.push(initial_state);
+
+    let mut step = 0;
+    while step < MAX_STEPS {
+        step += 1;
+        println!("Step: {step}");
+        let mut next_states:Vec<NewState> = Vec::new();
+        for s in &states {
+            if s.actor.steps_until_arrival > 0 {
+                // moving, push state
+                let new_state = NewState {
+                    actor: Actor {
+                        last_pos: String::from(&s.actor.last_pos),
+                        target_pos: String::from(&s.actor.target_pos),
+                        steps_until_arrival: s.actor.steps_until_arrival - 1
+                    },
+                    total_flow: s.total_flow,
+                    open_valves: s.open_valves.clone()
+                };
+                next_states.push(new_state);
+            } else {
+                // arrived, turn valve and look for next connections
+                let flow_rate_target = flow_rates.get(&s.actor.target_pos).unwrap().flow_rate;
+                let next_flow = s.total_flow + calc_total_flow(flow_rate_target, step);
+
+                let mut next_valves = s.open_valves.clone();
+                next_valves.insert(String::from(&s.actor.target_pos));
+
+                let distance_offset = if step == 1 && next_flow == 0 {-1} else {0}; // take into account first node being 0 pressure
+                for (next_node, distance) in map.get(&s.actor.target_pos).unwrap() {
+                    if next_valves.contains(next_node) {
+                        continue;
+                    }
+                    let new_state = NewState {
+                        actor: Actor {
+                            last_pos: String::from(&s.actor.target_pos),
+                            target_pos: String::from(next_node),
+                            steps_until_arrival: *distance + distance_offset // + 1 to account for time taken for the valve
+                        },
+                        total_flow: next_flow,
+                        open_valves: next_valves.clone()
+                    };
+                    next_states.push(new_state);
+                }
+            }
+        }
+        states = next_states;
+    }
+
+    let mut max = 0;
+    for s in states {
+        if s.total_flow > max  {
+            max = s.total_flow;
+        }
+    }
+
+    println!("Pt1 New: {max}");
+    max
+}
+
 pub fn run(input: String) {
     let map = parse_input(input);
     let distance_map = build_distance_map(&map);
+    pt1_new(&distance_map, &map);
     pt1(&map);
     pt2(&map);
 }
+
+
 
 fn build_distance_map(map: &HashMap<String, Node>) -> HashMap<String, HashMap<String, i32>> {
     let mut result = HashMap::new();
@@ -195,6 +283,25 @@ fn pt2(map: &HashMap<String, Node>) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_pt1_new() {
+        let input = String::from(
+            "Valve AA has flow rate=0; tunnels lead to valves DD, II, BB
+            Valve BB has flow rate=13; tunnels lead to valves CC, AA
+            Valve CC has flow rate=2; tunnels lead to valves DD, BB
+            Valve DD has flow rate=20; tunnels lead to valves CC, AA, EE
+            Valve EE has flow rate=3; tunnels lead to valves FF, DD
+            Valve FF has flow rate=0; tunnels lead to valves EE, GG
+            Valve GG has flow rate=0; tunnels lead to valves FF, HH
+            Valve HH has flow rate=22; tunnel leads to valve GG
+            Valve II has flow rate=0; tunnels lead to valves AA, JJ
+            Valve JJ has flow rate=21; tunnel leads to valve II"
+        );
+            let map = parse_input(input);
+            let other_map = build_distance_map(&map);
+            assert_eq!(pt1_new(&other_map, &map), 1651);
+    }
 
     #[test]
     fn test_pt1() {
